@@ -1,0 +1,49 @@
+code,class,desc
+B08,oral,Malignant neoplasm of lip, oral cavity and pharynx
+B09,stomach,Malignant neoplasm of digestive organs and peritoneum
+B090,oesophagus,Malignant neoplasm of oesophagus
+B091,stomach,Malignant neoplasm of stomach
+B092,colorectal,Malignant neoplasm of small intestine, including duodenum
+B093,colorectal,Malignant neoplasm of colon
+B094,colorectal,Malignant neoplasm of rectum, rectosigmoid junction and anus
+B095,liver,Malignant neoplasm of liver, specified as primary
+B096,pancreas,Malignant neoplasm of pancreas
+B099,stomach,Remainder of B09
+B10,lung,Malignant neoplasm of respiratory and intrathoracic organs 160-165
+B100,larynx,Malignant neoplasm of larynx
+B101,lung,Malignant neoplasm of trachea, bronchus and lung
+B109,lung,Remainder of B10
+B11,other_malignant_neoplasms,Malignant neoplasm of bone, connective tissue, skin and breast
+B110,other_malignant_neoplasms,Malignant neoplasm of bone and articular cartilage
+B111,skin,Malignant melanoma of skin
+B112,skin,Other malignant neoplasm of skin
+B113,breast,Malignant neoplasm of female breast
+B119,other_malignant_neoplasms,Remainder of B11
+B12,other_malignant_neoplasms,Malignant neoplasm of genitourinary organs
+B120,cervix,Malignant neoplasm of cervix uteri
+B121,placenta,Malignant neoplasm of placenta
+B122,uterus,Malignant neoplasm of uterus, other and unspecified
+B123,ovary,Malignant neoplasm of ovary and other uterine adnexa
+B124,prostate,Malignant neoplasm of prostate
+B125,testis,Malignant neoplasm of testis
+B126,bladder,Malignant neoplasm of bladder
+B129,other_malignant_neoplasms,Remainder of B12
+B13,other_malignant_neoplasms,Malignant neoplasm of other and unspecified sites
+B130,brain,Malignant neoplasm of brain
+B139,other_malignant_neoplasms,Remainder of B13
+B14,lymphatic_haemopoietic,Malignant neoplasm of lymphatic and haemopoietic tissue
+B140,lymphatic_haemopoietic,Hodgkin's disease
+B141,leukaemia,Leukaemia
+B149,lymphatic_haemopoietic,Remainder of B14
+C022,other_malignant_neoplasms,Malignant neoplasms
+C023,oral,Mal. neoplasms of nasopharynx
+C024,oesophagus,Mal. neoplasms of oesophagus
+C025,stomach,Mal. neoplasm of stomach
+C026,colorectal,Mal. neoplasm of colon, rectum, rectosigmoid junction and anus
+C027,liver,Mal. neoplasm of liver
+C028,lung,Mal. neoplasm of trachea, bronchus and lung
+C029,breast,Mal. neoplasm of female breast
+C030,cervix,Mal. neoplasm of cervix uteri
+C031,bladder,Malign neoplasm of bladder
+C032,leukaemia,Leukaemia
+

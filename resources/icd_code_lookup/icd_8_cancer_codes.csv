@@ -1,0 +1,17 @@
+code,class, desc
+A045,oral,Malignant neoplasm of buccal cavity and pharynx
+A046,oesophagus,Malignant neoplasm of oesophagus
+A047,stomach, Malignant neoplasm of stomach
+A048,colorectal,Malignant neoplasm of intestine, except rectum
+A049,colorectal,Malignant neoplasm of rectum and rectosigmoid junction
+A050,larynx,Malignant neoplasm of larynx
+A051,lung,Malignant neoplasm of trachea, bronchus and lung
+A052,other_malignant_neoplasms, Malignant neoplasm of bone
+A053,skin,Malignant neoplasm of skin
+A054,breast,Malignant neoplasm of breast
+A055,cervix,Malignant neoplasm of cervix uteri
+A056,uterus,Other malignant neoplasm of uterus
+A057,prostate,Malignant neoplasm of prostate
+A058,other_malignant_neoplasms, Malignant neoplasm of other and unspecified sites
+A059,leukaemia, Leukaemia
+A060,lymphatic_haemopoietic,Other neoplasms of lymphatic and haemotopoietic tissue

@@ -1,0 +1,39 @@
+code,class,desc
+1027,oral,Malignant neoplasm of lip, oral cavity and pharynx
+1028,oesophagus,Malignant neoplasm of oesophagus
+1029,stomachMalignant neoplasm of stomach
+1030,colorectal, Malignant neoplasm of colon, rectum and anus
+1031,liver,Malignant neoplasm of liver and intrahepatic bile ducts
+1032,pancreas,Malignant neoplasm of pancreas
+1033,larynx,Malignant neoplasm of larynx
+1034,lung,Malignant neoplasm of trachea, bronchus and lung
+1035,skin,Malignant melanoma of skin
+1036,breast,Malignant neoplasm of breast
+1037,cervix,Malignant neoplasm of cervix uteri
+1038,uterus,Malignant neoplasm of other and unspecified parts of uterus
+1039,ovary,Malignant neoplasm of ovary
+1040,prostate,Malignant neoplasm of prostate
+1041,bladder,Malignant neoplasm of bladder
+1042,brain,Malignant neoplasm of meninges, brain and other parts of central nervous system
+1043,lymphatic_haemopoietic,Non-Hodgkin's lymphoma
+1044,plasma_cells,Multiple myeloma and malignant plasma cell neoplasms
+1045,leukaemia,Leukaemia
+1046,other_malignant_neoplasms,Malignant neoplasms
+UE07,other_malignant_neoplasms,Malignant neoplasms
+UE08,oral,malignant neoplasm of lip, oral cavity, pharynx
+UE09,oesophagus,malignant neoplasm of oesophagus
+UE10,stomach,malignant neoplasm of stomach
+UE11,colorectal,malignant neoplasm of colon
+UE12,colorectal,malignant neoplasm of rectum and anus
+UE13,liver,malignant neoplasm of liver and the intrahepatic bile ducts
+UE14,pancreas,malignant neoplasm of pancreas
+UE15,lung,malignant neoplasm of larynx and trachea/bronchus/lung
+UE16,skin,malignant neoplasm of skin
+UE17,breast,malignant neoplasm of breast
+UE18,cervix,malignant neoplasm of cervix uteri
+UE19,uterus,malignant neoplasm of other parts of uterus
+UE20,ovary,malignant neoplasm of ovary
+UE21,prostate,malignant neoplasm of prostate
+UE22,kidney,malignant neoplasm of kidney
+UE23,bladder,malignant neoplasm of bladder
+UE24,lymphatic_haemopoietic,malignant neoplasm of lymph/haematopoietic tissue
