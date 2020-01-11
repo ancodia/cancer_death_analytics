@@ -17,7 +17,7 @@ icd9_lookup_path = lookups_path + 'icd_9_cancer_codes.csv'
 
 icd10_1_mortality_data_path = mortality_data_path + 'Morticd10_part1'
 icd10_2_mortality_data_path = mortality_data_path + 'Morticd10_part2'
-icd10_lookup_path = lookups_path + 'icd_10_cancer_codes.csv'
+icd10_lookup_path = lookups_path + 'icd_10_cancer_codes_combined.csv'
 
 country_codes_path = data_path + 'country_codes'
 populations_path = data_path + 'pop'
@@ -31,7 +31,7 @@ def get_country_codes_dictionary():
     country_codes_dict = dict(zip(list(country_codes_df['country']), list(country_codes_df['name'])))
 
 
-def replace_codes_in_icd_data(source_file_path, lookup_file_path):
+def replace_codes_in_icd_data(source_file_path, lookup_file_path, regex_replace=None):
     """
     Replace cause of death (cancer-related only) and country codes with string value for ease of use
     """
@@ -42,6 +42,9 @@ def replace_codes_in_icd_data(source_file_path, lookup_file_path):
 
     main_df['Country'] = main_df['Country'].map(country_codes_dict)
     main_df['Cause'] = main_df['Cause'].map(lookup_dict).fillna(main_df['Cause'])
+
+    if regex_replace is not None:
+        main_df['Cause'].replace(regex_replace, 'other_cancers', regex=True, inplace=True)
 
     output_csv = '../resources/data/codes_replaced/' + \
                  os.path.basename(source_file_path) + '_updated.csv'
@@ -65,10 +68,13 @@ if __name__== "__main__":
     #https://www.icd10data.com/ICD10CM/Codes/C00-D49
     #https://www.cms.gov/Medicare/Coding/ICD10/Downloads/2016-Code-Descriptions-in-Tabular-Order.zip
 
+    #https://training.seer.cancer.gov/icd10cm/neoplasm/c-codes.html
+    #https://github.com/kamillamagna/ICD-10-CSV/blob/master/categories.csv
+
     replace_codes_in_icd_data(icd7_mortality_data_path, icd7_lookup_path)
     replace_codes_in_icd_data(icd8_mortality_data_path, icd8_lookup_path)
     replace_codes_in_icd_data(icd9_mortality_data_path, icd9_lookup_path)
-    replace_codes_in_icd_data(icd10_1_mortality_data_path, icd10_lookup_path)
-    replace_codes_in_icd_data(icd10_2_mortality_data_path, icd10_lookup_path)
+    replace_codes_in_icd_data(icd10_1_mortality_data_path, icd10_lookup_path, regex_replace='^[C].*')
+    replace_codes_in_icd_data(icd10_2_mortality_data_path, icd10_lookup_path, regex_replace='^[C].*')
 
     replace_codes_in_populations_data()

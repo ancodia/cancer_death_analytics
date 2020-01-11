@@ -11,8 +11,8 @@ A052,cervix,Malignant neoplasm of cervix uteri
 A053,uterus,Malignant neoplasm of other and unspecified parts of uterus
 A054,prostate,Malignant neoplasm of prostate
 A055,skin,Malignant neoplasm of skin
-A056,other_malignant_neoplasms,Malignant neoplasm of bone and connective tissue
-A057,other_malignant_neoplasms,Malignant neoplasm of all other and unspecified sites
+A056,other_cancers,Malignant neoplasm of bone and connective tissue
+A057,other_cancers,Malignant neoplasm of all other and unspecified sites
 A058,leukaemia,Leukaemia and aleukaemia
 A059,lymphatic_haemopoietic,Lymphosarcoma and other neoplasms of lymphatic and haematopoietic system
-B018,other_malignant_neoplasms,Malignant neoplasms, including neoplasms of lymphatic and haematopoietic tissues
+B018,other_cancers,Malignant neoplasms, including neoplasms of lymphatic and haematopoietic tissues

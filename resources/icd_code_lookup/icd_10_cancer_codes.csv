@@ -14,12 +14,12 @@ code,class,desc
 1039,ovary,Malignant neoplasm of ovary
 1040,prostate,Malignant neoplasm of prostate
 1041,bladder,Malignant neoplasm of bladder
-1042,brain,Malignant neoplasm of meninges, brain and other parts of central nervous system
+1042,brain_cns,Malignant neoplasm of meninges, brain and other parts of central nervous system
 1043,lymphatic_haemopoietic,Non-Hodgkin's lymphoma
 1044,plasma_cells,Multiple myeloma and malignant plasma cell neoplasms
 1045,leukaemia,Leukaemia
-1046,other_malignant_neoplasms,Malignant neoplasms
-UE07,other_malignant_neoplasms,Malignant neoplasms
+1046,other_cancers,Malignant neoplasms
+UE07,other_cancers,Malignant neoplasms
 UE08,oral,malignant neoplasm of lip, oral cavity, pharynx
 UE09,oesophagus,malignant neoplasm of oesophagus
 UE10,stomach,malignant neoplasm of stomach
