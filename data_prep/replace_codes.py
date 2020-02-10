@@ -1,5 +1,8 @@
 import csv
 import os
+import pickle
+
+import numpy
 import pandas as pd
 
 lookups_path = '../resources/icd_code_lookup/'
@@ -62,19 +65,31 @@ def replace_codes_in_populations_data():
     print(f'Updated csv output to: {output_csv}')
 
 
-if __name__== "__main__":
+def create_unique_cancer_diagnosis_lookup_file():
+    """
+    Create a file based on unique values in each of the ICD diagnosis lookup files
+    for lookup purposes during performance of analytics
+    """
+    lookup_files = [icd7_lookup_path, icd8_lookup_path, icd9_lookup_path, icd10_lookup_path]
+    df = pd.concat((pd.read_csv(f, usecols=range(3), lineterminator='\n') for f in lookup_files), ignore_index=True)
+    unique_classes = list(df['class'].unique())
+    print(unique_classes)
+    output_file = '../resources/data/unique_cancer_class.txt'
+
+    with open(output_file, 'w') as f:
+        for item in unique_classes:
+            f.write("%s\n" % item)
+    print(f'Unique cancer class output to: {output_file}')
+
+
+if __name__ == "__main__":
     get_country_codes_dictionary()
 
-    #https://www.icd10data.com/ICD10CM/Codes/C00-D49
-    #https://www.cms.gov/Medicare/Coding/ICD10/Downloads/2016-Code-Descriptions-in-Tabular-Order.zip
-
-    #https://training.seer.cancer.gov/icd10cm/neoplasm/c-codes.html
-    #https://github.com/kamillamagna/ICD-10-CSV/blob/master/categories.csv
-
-    replace_codes_in_icd_data(icd7_mortality_data_path, icd7_lookup_path)
-    replace_codes_in_icd_data(icd8_mortality_data_path, icd8_lookup_path)
-    replace_codes_in_icd_data(icd9_mortality_data_path, icd9_lookup_path)
-    replace_codes_in_icd_data(icd10_1_mortality_data_path, icd10_lookup_path, regex_replace='^[C].*')
-    replace_codes_in_icd_data(icd10_2_mortality_data_path, icd10_lookup_path, regex_replace='^[C].*')
-
-    replace_codes_in_populations_data()
+    # replace_codes_in_icd_data(icd7_mortality_data_path, icd7_lookup_path)
+    # replace_codes_in_icd_data(icd8_mortality_data_path, icd8_lookup_path)
+    # replace_codes_in_icd_data(icd9_mortality_data_path, icd9_lookup_path)
+    # replace_codes_in_icd_data(icd10_1_mortality_data_path, icd10_lookup_path, regex_replace='^[C].*')
+    # replace_codes_in_icd_data(icd10_2_mortality_data_path, icd10_lookup_path, regex_replace='^[C].*')
+    #
+    # replace_codes_in_populations_data()
+    create_unique_cancer_diagnosis_lookup_file()
