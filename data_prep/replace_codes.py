@@ -51,7 +51,7 @@ def replace_codes_in_icd_data(source_file_path, lookup_file_path, regex_replace=
 
     output_csv = '../resources/data/codes_replaced/' + \
                  os.path.basename(source_file_path) + '_updated.csv'
-    main_df.to_csv(output_csv, encoding='utf-8', index=False)
+    main_df.fillna(0).to_csv(output_csv, encoding='utf-8', index=False, float_format='%.f')
     print(f'Updated csv output to: {output_csv}')
 
 
@@ -61,7 +61,7 @@ def replace_codes_in_populations_data():
 
     output_csv = '../resources/data/codes_replaced/' + \
                  os.path.basename(populations_path) + '_updated.csv'
-    df.to_csv(output_csv, encoding='utf-8', index=False)
+    df.fillna(0).to_csv(output_csv, encoding='utf-8', index=False, float_format='%.f')
     print(f'Updated csv output to: {output_csv}')
 
 
@@ -85,11 +85,11 @@ def create_unique_cancer_diagnosis_lookup_file():
 if __name__ == "__main__":
     get_country_codes_dictionary()
 
-    # replace_codes_in_icd_data(icd7_mortality_data_path, icd7_lookup_path)
-    # replace_codes_in_icd_data(icd8_mortality_data_path, icd8_lookup_path)
-    # replace_codes_in_icd_data(icd9_mortality_data_path, icd9_lookup_path)
-    # replace_codes_in_icd_data(icd10_1_mortality_data_path, icd10_lookup_path, regex_replace='^[C].*')
-    # replace_codes_in_icd_data(icd10_2_mortality_data_path, icd10_lookup_path, regex_replace='^[C].*')
-    #
-    # replace_codes_in_populations_data()
+    replace_codes_in_icd_data(icd7_mortality_data_path, icd7_lookup_path)
+    replace_codes_in_icd_data(icd8_mortality_data_path, icd8_lookup_path)
+    replace_codes_in_icd_data(icd9_mortality_data_path, icd9_lookup_path)
+    replace_codes_in_icd_data(icd10_1_mortality_data_path, icd10_lookup_path, regex_replace='^[C].*')
+    replace_codes_in_icd_data(icd10_2_mortality_data_path, icd10_lookup_path, regex_replace='^[C].*')
+
+    replace_codes_in_populations_data()
     create_unique_cancer_diagnosis_lookup_file()
