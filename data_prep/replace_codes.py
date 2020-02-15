@@ -1,8 +1,4 @@
-import csv
 import os
-import pickle
-
-import numpy
 import pandas as pd
 
 lookups_path = '../resources/icd_code_lookup/'
@@ -36,7 +32,7 @@ def get_country_codes_dictionary():
 
 def replace_codes_in_icd_data(source_file_path, lookup_file_path, regex_replace=None):
     """
-    Replace cause of death (cancer-related only) and country codes with string value for ease of use
+    Replace cause of death (cancer-related and overall only) and country codes with string values
     """
     lookup_df = pd.read_csv(lookup_file_path, header=0, sep=',', index_col=False, usecols=['code', 'class'])
     lookup_dict = dict(zip(list(lookup_df['code']), list(lookup_df['class'])))
@@ -73,6 +69,8 @@ def create_unique_cancer_diagnosis_lookup_file():
     lookup_files = [icd7_lookup_path, icd8_lookup_path, icd9_lookup_path, icd10_lookup_path]
     df = pd.concat((pd.read_csv(f, usecols=range(3), lineterminator='\n') for f in lookup_files), ignore_index=True)
     unique_classes = list(df['class'].unique())
+    # 'all' relates to overall death numbers so removing it
+    unique_classes.remove('all')
     print(unique_classes)
     output_file = '../resources/data/unique_cancer_class.txt'
 
