@@ -30,9 +30,10 @@ def get_country_codes_dictionary():
     country_codes_dict = dict(zip(list(country_codes_df['country']), list(country_codes_df['name'])))
 
 
-def replace_codes_in_icd_data(source_file_path, lookup_file_path, regex_replace=None):
+def clean_icd_data(source_file_path, lookup_file_path, regex_replace=None):
     """
-    Replace cause of death (cancer-related and overall only) and country codes with string values
+    Replace cause of death codes (cancer-related and overall only) with category
+    and country codes with names
     """
     lookup_df = pd.read_csv(lookup_file_path, header=0, sep=',', index_col=False, usecols=['code', 'class'])
     lookup_dict = dict(zip(list(lookup_df['code']), list(lookup_df['class'])))
@@ -51,7 +52,10 @@ def replace_codes_in_icd_data(source_file_path, lookup_file_path, regex_replace=
     print(f'Updated csv output to: {output_csv}')
 
 
-def replace_codes_in_populations_data():
+def clean_populations_data():
+    """
+    Replace country codes with name
+    """
     df = pd.read_csv(populations_path, header=0, sep=',', index_col=False)
     df['Country'] = df['Country'].map(country_codes_dict)
 
@@ -83,11 +87,11 @@ def create_unique_cancer_diagnosis_lookup_file():
 if __name__ == "__main__":
     get_country_codes_dictionary()
 
-    replace_codes_in_icd_data(icd7_mortality_data_path, icd7_lookup_path)
-    replace_codes_in_icd_data(icd8_mortality_data_path, icd8_lookup_path)
-    replace_codes_in_icd_data(icd9_mortality_data_path, icd9_lookup_path)
-    replace_codes_in_icd_data(icd10_1_mortality_data_path, icd10_lookup_path, regex_replace='^[C].*')
-    replace_codes_in_icd_data(icd10_2_mortality_data_path, icd10_lookup_path, regex_replace='^[C].*')
+    clean_icd_data(icd7_mortality_data_path, icd7_lookup_path)
+    clean_icd_data(icd8_mortality_data_path, icd8_lookup_path)
+    clean_icd_data(icd9_mortality_data_path, icd9_lookup_path)
+    clean_icd_data(icd10_1_mortality_data_path, icd10_lookup_path, regex_replace='^[C].*')
+    clean_icd_data(icd10_2_mortality_data_path, icd10_lookup_path, regex_replace='^[C].*')
 
-    replace_codes_in_populations_data()
+    clean_populations_data()
     create_unique_cancer_diagnosis_lookup_file()

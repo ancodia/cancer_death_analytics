@@ -1,8 +1,8 @@
 from functools import reduce
 from operator import add
-from pyspark.sql.functions import Column, udf, array
+from pyspark.sql.functions import udf, Column
 import pyspark
-from pyspark.sql.types import FloatType
+from pyspark.sql.types import FloatType, IntegerType
 
 deaths_column_names = ['Deaths' + str(x) for x in range(1, 27)]
 
@@ -14,11 +14,14 @@ class SparkHelper:
         # self.spark.sparkContext.setLogLevel('DEBUG')
         self.cancer_classes = self.read_cancer_classes(path='../resources/data/unique_cancer_class.txt')
         self.mortality_data = self.read_data(path='../resources/data/codes_replaced/Mort*')
-        # filter for data between 1966-2016
+        # filter for data between 1986-2015,
+        # exclude UK - England, Wales, Scotland and NI are also reported separately
         self.mortality_data = self.mortality_data \
-            .filter((self.mortality_data['Year'] >= 1966) & (self.mortality_data['Year'] <= 2016))
+            .filter((self.mortality_data['Year'] >= 1986)
+                    & (self.mortality_data['Year'] <= 2015)
+                    & (self.mortality_data['Country'] != 'United Kingdom'))
 
-        self.cancer_mortalities = self.mortality_data.filter(self.mortality_data['Cause'].isin(self.cancer_classes))
+        self.cancer_mortality_data = self.mortality_data.filter(self.mortality_data['Cause'].isin(self.cancer_classes))
         self.populations = self.read_data(path='../resources/data/codes_replaced/pop_updated.csv')
         self.age_ranges = self.read_data(path='../resources/age_range_lookup.csv')
 
@@ -53,19 +56,36 @@ class SparkHelper:
 
     def calculate_death_rate_per_100k(self, df):
         """
-        Mortality Rate = (Deaths / Population x 10^5)
+        *** Unused for now, populations dataset requires further processing
+        because records do not exist for all years ***
         :param df:
         """
         # join input dataframe with self.populations
         column_index = [str(x) for x in range(1, 27)]
 
-        conditions = [df['Year'] == self.populations['Year'],
-                      df['Country'] == self.populations['Country'],
-                      df['Sex'] == self.populations['Sex']]
-        joined_df = df.join(self.populations, conditions) \
-            .select(df['*'], *[f'Pop{x}' for x in column_index])
+        # some years are not included in the populations dataset so use previous/next years values
+        # conditions = [df['Country'] == self.populations['Country'],
+        #               df['Sex'] == self.populations['Sex'],
+        #               df['Year'] == self.populations['Year']
+        #               | df['Year']]
 
-        calculate_udf = udf(lambda x, y: (x / y) * (10 ^ 3) if y != 0 else 0, FloatType())
+        df.registerTempTable("df")
+        self.populations.registerTempTable("df2")
+
+        population_columns = ("".join([f',df2.Pop{x}' for x in column_index]))
+        joined_df = self.spark.sql(f'select df.* {population_columns} from df join df2 '
+                                   'on df.Country=df2.Country '
+                                   'and df.Sex=df2.Sex '
+                                   'and df.Year=df2.Year '
+                                   'or (df.Year-1)=df2.Year '
+                                   'or (df.Year+1)=df2.Year')\
+            .toDF(*df.columns, *[f'Pop{x}' for x in column_index])
+
+        # joined_df = df.join(self.populations, conditions) \
+        #     .select(df['*'], *[f'Pop{x}' for x in column_index])
+
+        calculate_udf = udf(lambda x, y: (x / y) * (10 ^ 5) if y != 0 else 0, FloatType())
+
         for c in column_index:
             joined_df = joined_df.withColumn(f'mortality_rate{c}',
                                              calculate_udf(joined_df[f'Deaths{c}'],
@@ -76,6 +96,12 @@ class SparkHelper:
                                              *[f'mortality_rate{x}' for x in column_index])
         mortality_rate_df = mortality_rate_df.fillna(0).cache()
         return mortality_rate_df
+
+    def calculate_total_deaths(self, df, column_range, result_column_names):
+        df.registerTempTable("df")
+        deaths_columns = (", ".join([f'sum(Deaths{x})' for x in column_range]))
+        df = self.spark.sql(f'select {deaths_columns} from df').toDF(*result_column_names)
+        return df
 
     # @staticmethod
     # def top_n_deaths(n):
