@@ -1181,3 +1181,6 @@ C966,lymphatic_haemopoietic, Unifocal Langerhans-cell histiocytosis,,
 C96A,lymphatic_haemopoietic, Histiocytic sarcoma,,
 C96Z,lymphatic_haemopoietic, Other specified malignant neoplasms of lymphoid, hematopoietic and related tissue,
 C969,lymphatic_haemopoietic, Malignant neoplasm of lymphoid, hematopoietic and related tissue, unspecified
+1000,all,All causes
+AAA,all,All causes
+CH00,all,All causes

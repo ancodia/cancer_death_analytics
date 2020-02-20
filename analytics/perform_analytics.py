@@ -1,20 +1,19 @@
-from functools import reduce
-from operator import sub
-
+import os
 import numpy as np
-import pandas as pd
 from matplotlib import ticker
 from pyspark.ml import Pipeline
-from pyspark.ml.feature import VectorAssembler, StandardScaler
-from pyspark.ml.regression import GeneralizedLinearRegression
+from pyspark.ml.feature import VectorAssembler, PolynomialExpansion
+from pyspark.ml.regression import LinearRegression
+from pyspark.ml.evaluation import RegressionEvaluator
 
 from analytics.spark_helper import SparkHelper
-import pyspark.sql.functions as F
 import matplotlib.pyplot as plt
 
 helper = None
 mortality_data = None
 cancer_mortality_data = None
+
+output_dir = '../output'
 
 
 def cancer_vs_non_cancer_deaths_over_time():
@@ -23,16 +22,17 @@ def cancer_vs_non_cancer_deaths_over_time():
     Represented with a stacked bar chart.
     """
     # 'Deaths1' column contains count of deaths for all age groups
-    yearly_all_deaths = mortality_data.where(mortality_data['Cause'] == 'all').groupBy('Year') \
+    yearly_all_deaths = mortality_data.where(mortality_data['Cause'] == 'all'
+                                             & (mortality_data['Year'] >= 1986)).groupBy('Year') \
         .agg({'Deaths1': 'sum'}).toDF('Year', 'Total')
 
-    yearly_cancer_deaths = cancer_mortality_data.groupBy('Year') \
+    yearly_cancer_deaths = cancer_mortality_data.where((cancer_mortality_data['Year'] >= 1986)).groupBy('Year') \
         .agg({'Deaths1': 'sum'}).toDF('Year', 'Total')
 
     # Combine dataframes, subtract cancer deaths from overall,
     # calculate percentage of total that cancer deaths constitute
-    yearly_all_deaths.registerTempTable("df")
-    yearly_cancer_deaths.registerTempTable("df2")
+    yearly_all_deaths.createOrReplaceTempView('df')
+    yearly_cancer_deaths.createOrReplaceTempView('df2')
 
     yearly_deaths = helper.spark.sql('select df.Year, '
                                      'df.Total-df2.Total, '
@@ -47,141 +47,168 @@ def cancer_vs_non_cancer_deaths_over_time():
     print(yearly_deaths['cancer_percentage'].pct_change())
 
     # construct horizontal bar chart
-    ax = yearly_deaths.plot.barh(y=['cancer', 'non_cancer'], x='year', stacked=True, figsize=(20, 40))
+    ax = yearly_deaths.plot.barh(y=['cancer', 'non_cancer'], x='year', stacked=True)
     # display every 5th Year label
     n = 5
     for index, label in enumerate(ax.yaxis.get_ticklabels()):
         if index % n != 0:
             label.set_visible(False)
-    plt.ylabel("Years")
+    plt.ylabel('Years')
     ax.xaxis.set_major_formatter(ticker.EngFormatter())
-    plt.xlabel("Deaths")
-    plt.legend(loc="lower right")
-    plt.title("Cancer vs Non-cancer Yearly Deaths")
-    plt.show()
+    plt.xlabel('Deaths')
+    plt.legend(loc='lower right')
+    plt.title('Cancer vs Non-cancer Yearly Deaths')
+
+    if not os.path.exists(output_dir):
+        os.mkdir(output_dir)
+    plt.savefig(f'{output_dir}/cancer_vs_non_cancer.png')
 
 
-def cancer_death_age_gender_correlation():
+def linear_regression_to_predict_number_of_deaths():
     """
-    Worldwide cancer mortality figures are considered first, followed by a look at Ireland only
-    - Male vs Female death counts for 20-80 years old
+    Worldwide cancer mortality figures are considered for females aged 20-70 years old.
+    > The mean death numbers by age are visualised first.
+    > Then a polynomial regression is performed on this data to predict death numbers in the 50-54 age range
     """
-    male_mortality = cancer_mortality_data.filter((cancer_mortality_data['Sex'] == 1)).cache()
-    female_mortality = cancer_mortality_data.filter((cancer_mortality_data['Sex'] == 2)).cache()
+    cancer_mortality_data.createOrReplaceTempView('df')
 
-    # Relevant columns for 20-80yrs are Deaths[11-22]
-    column_index = [str(x) for x in range(11, 22)]
+    # Relevant columns for 20-70yrs are Deaths[10-19]
+    column_index = [str(x) for x in range(10, 20)]
 
-    # get age range strings
-    column_names = [helper.age_ranges.select('00').filter(
+    sum_columns = (', '.join([f'sum(Deaths{x})' for x in column_index]))
+    female_yearly_totals = helper.spark.sql(f'select df.Year, {sum_columns} from df '
+                                            'where df.Sex=2 '
+                                            'group by df.Year '
+                                            'order by df.Year asc').toDF('Year', *[f'Deaths{x}' for x in column_index])
+    print(female_yearly_totals.show())
+
+    # Check Pearson Correlation Coefficient between independent variables and target variable (Deaths16)
+    for i in female_yearly_totals.columns:
+        if i != 'Year':
+            correlation = female_yearly_totals.stat.corr('Deaths16', i)
+            print(f'Correlation between {i} and Deaths16: {correlation}')
+
+    # plot mean deaths by age to find out the shape of this dataset
+    plot_df = female_yearly_totals.toPandas()
+    plot_df.drop(columns=['Year'], inplace=True)  # drop the Year column as it's not needed for this graph
+    x_axis = [x for x in range(0, len(plot_df.columns))]
+    y_axis = [int(plot_df[y].mean()) for y in plot_df.columns]
+
+    # get age range labels
+    age_ranges = [helper.age_ranges.select('00').filter(
         (helper.age_ranges['index'] == str(x))).collect()[0][0] for x in column_index]
-    # Calculate totals for each age range, then transpose so each age range is a column
-    male_mortality_totals = helper\
-        .calculate_total_deaths(male_mortality,
-                                column_index,
-                                column_names)\
-        .toPandas().transpose()
-    female_mortality_totals = helper \
-        .calculate_total_deaths(female_mortality,
-                                column_index,
-                                column_names) \
-        .toPandas().transpose()
-    for frame in [male_mortality_totals, female_mortality_totals]:
-        frame.columns = ['total']
-        frame['range'] = frame.index
-    print(male_mortality_totals.head())
-    print(female_mortality_totals.head())
 
-    # convert pandas dataframes back to pyspark for analysis
-    male_mortality_totals = helper.spark.createDataFrame(male_mortality_totals, ['total', 'range'])
-    female_mortality_totals = helper.spark.createDataFrame(female_mortality_totals, ['total', 'range'])
-    print(male_mortality_totals.show())
-    print(female_mortality_totals.show())
+    plt.xticks(np.arange(len(age_ranges)), age_ranges)
+    plt.ylabel('Yearly Average Number of Deaths')
+    plt.xlabel('Age')
+    plt.title('Cancer Deaths (Female, 20-70 years old)')
+    plt.plot(x_axis, y_axis)
+    ax = plt.gca()
+    ax.yaxis.set_major_formatter(ticker.EngFormatter())
+    if not os.path.exists(output_dir):
+        os.mkdir(output_dir)
+    plt.savefig(f'{output_dir}/female_cancer_deaths.png')
 
-    # features = ["total"]
-    # lr_data = male_mortality_totals.select(male_mortality_totals['range'].alias("label"), *features)
-    # lr_data.printSchema()
-    #
-    # lr_data = male_mortality_totals.withColumnRenamed("Total", "label")
-    #
-    # (training, test) = df.randomSplit([.7, .3])
-    # print('train ' + str(training.count()))
-    # print('test ' + str(test.count()))
-    #
-    # vectorAssembler = VectorAssembler(inputCols=['feature'], outputCol='unscaled_features')
-    # standardScaler = StandardScaler(inputCol='unscaled_features', outputCol='features')
-    # glr = GeneralizedLinearRegression(maxIter=10, regParam=.01).setLabelCol('label').setPredictionCol('Predicted')
-    #
-    # stages = [vectorAssembler, standardScaler, glr]
-    # pipeline = Pipeline(stages=stages)
+    # female_mortality = cancer_mortality_data.filter((cancer_mortality_data['Sex'] == 2))
+    # print(female_mortality.describe())
+    (training, test) = female_yearly_totals.randomSplit([.7, .3])
+    training.cache()
+    test.cache()
 
+    # exclude 'Deaths16' (50-54 years old range) from features in training
+    # column_index.remove('16')
+    vectorised = VectorAssembler(inputCols=[f'Deaths{x}' for x in column_index], outputCol='features')
 
+    poly_expansion = PolynomialExpansion(degree=3, inputCol='features', outputCol='poly_features')
 
+    # set label column to 'Deaths16' as this is the column value being predicted
+    lr = LinearRegression(maxIter=10, regParam=0.5).setLabelCol('Deaths16').setPredictionCol('predicted')
 
-
-    vectorizer = VectorAssembler()
-    vectorizer.setInputCols(['total'])
-    vectorizer.setOutputCol("features")
-
-    glr = GeneralizedLinearRegression(family="gaussian", link="identity", maxIter=10, regParam=0.3)\
-        .setPredictionCol("Predicted")\
-        .setLabelCol("range")
-
-    glr_pipeline = Pipeline()
-    glr_pipeline.setStages([vectorizer, glr])
+    lr_pipeline = Pipeline()
+    lr_pipeline.setStages([vectorised, poly_expansion, lr])
 
     # Fit the model
-    model = glr_pipeline.fit(male_mortality_totals)
+    model = lr_pipeline.fit(training)
 
+    predictions = model.transform(test).select('Year', 'Deaths16', 'poly_features', 'predicted')
+    print(predictions.show())
+
+    model_details = model.stages[2]
+    print('_____________\nModel details:\n_____________')
     # Print the coefficients and intercept for generalized linear regression model
-    print("Coefficients: " + str(model.coefficients))
-    print("Intercept: " + str(model.intercept))
+    print('Coefficients: ' + str(model_details.coefficients))
+    print('Intercept: ' + str(model_details.intercept))
 
     # Summarize the model over the training set and print out some metrics
-    summary = model.summary
-    print("Coefficient Standard Errors: " + str(summary.coefficientStandardErrors))
-    print("T Values: " + str(summary.tValues))
-    print("P Values: " + str(summary.pValues))
-    print("Dispersion: " + str(summary.dispersion))
-    print("Null Deviance: " + str(summary.nullDeviance))
-    print("Residual Degree Of Freedom Null: " + str(summary.residualDegreeOfFreedomNull))
-    print("Deviance: " + str(summary.deviance))
-    print("Residual Degree Of Freedom: " + str(summary.residualDegreeOfFreedom))
-    print("AIC: " + str(summary.aic))
-    print("Deviance Residuals: ")
-    summary.residuals().show()
+    summary = model_details.summary
+    print('Coefficient Standard Errors: ' + str(summary.coefficientStandardErrors))
+    print('T Values: ' + str(summary.tValues))
+    print('P Values: ' + str(summary.pValues))
+    print('r^2: ' + str(summary.r2))
+    print('Mean Squared Error: ' + str(summary.meanSquaredError))
+    print('Mean Absolute Error: ' + str(summary.meanAbsoluteError))
+    print('Explained variance: ' + str(summary.explainedVariance))
+    print('Degrees Of Freedom: ' + str(summary.degreesOfFreedom))
+    print('Deviance Residuals: ' + str(summary.devianceResiduals))
 
-    # get age range strings
-    # column_names = [helper.age_ranges.select('00').filter(
-    #     (helper.age_ranges['index'] == str(x))).collect()[0][0] for x in column_index]
-    # exprs = [F.avg(f'mortality_rate{x}') for x in column_index]
-    #
-    # male_average = male_colorectal_mortality \
-    #     .agg(*exprs).toDF(*column_names).toPandas().transpose()
-    # female_average = female_colorectal_mortality \
-    #     .agg(*exprs).toDF(*column_names).toPandas().transpose()
-    #
-    # for frame in [male_average, female_average]:
-    #     frame.columns = ['value']
-    #     frame['range'] = frame.index
-    #     print(frame.head())
-    #     plt.plot(frame['range'], frame['value'])
+    # Evaluation metrics for test dataset
+    # Create an RMSE evaluator using the label and predicted columns
+    reg_eval = RegressionEvaluator(predictionCol='predicted', labelCol='Deaths16', metricName='rmse')
 
-    #
-    # for frame in [male_average, female_average]:
-    #     plt.plot(frame['range'], frame['value'])
+    # Run the evaluator on the DataFrame
+    print('_____________\nPrediction evaluation:\n_____________')
+    rmse = reg_eval.evaluate(predictions)
+    print(f'Root Mean Squared Error: {rmse}')
 
-    # plt.ylabel("Average Deaths per 100,000")
-    # plt.xlabel("Age")
-    # plt.legend(loc="upper right")
-    # plt.title("Worldwide Cancer Mortality by Age")
-    # plt.show()
+    # Mean Square Error
+    mse = reg_eval.evaluate(predictions, {reg_eval.metricName: 'mse'})
+    print(f'Mean Square Error: {mse}')
+
+    # Mean Absolute Error
+    mae = reg_eval.evaluate(predictions, {reg_eval.metricName: 'mae'})
+    print(f'Mean Absolute Error: {mae}')
+
+    # r2 - coefficient of determination
+    r2 = reg_eval.evaluate(predictions, {reg_eval.metricName: 'r2'})
+    print(f'r^2: {r2}')
+    print('a')
 
 
 def most_fatal_cancers_over_time():
     """
-
+    Find and visualise the top 5 most deadly cancers over time.
     """
+    cancer_mortality_data.createOrReplaceTempView('df')
+
+    # get top 5 causes based on total deaths, ignore other_cancers class
+    top_5_causes = helper.spark.sql('select df.Cause from df '
+                                    'where df.Cause!="other_cancers" '
+                                    'group by df.Cause '
+                                    'order by sum(df.Deaths1) desc limit 5').toDF('cause').collect()
+    top_5_causes = [r[0] for r in top_5_causes]
+    print(top_5_causes)
+
+    cancer_mortality_data.createOrReplaceTempView('df')
+    # get totals
+    where = ('or '.join([f'df.Cause="{x}"' for x in top_5_causes]))
+    yearly_totals = helper.spark.sql(f'select df.Cause, df.Year, sum(df.Deaths1) from df '
+                                     f'where {where} group by df.Cause, df.Year').toDF('cause', 'year', 'total')
+
+    # yearly_totals = cancer_mortality_data.select('Cause', 'Year', 'Deaths1')\
+    #     .orderBy('Year').filter(cancer_mortality_data['Cause'].isin(top_5_causes))\
+    #     .groupBy('Year').agg({'Deaths1': 'sum'})
+        #.toDF('cause', 'year', 'total')
+
+    # yearly_totals = cancer_mortality_data.select('Year', 'Cause', 'sum(Deaths1)') \
+    #     .filter(cancer_mortality_data['Cause'].isin(top_5_causes)) \
+    #     .groupBy('Year') \
+    #     .toDF('year', 'cause', 'total')
+
+    print(yearly_totals.show())
+
+    dfs_causes = dict()
+    for c in top_5_causes:
+        dfs_causes[c] = yearly_totals.select('year', 'total').where(yearly_totals['cause'] == c)
 
 
 if __name__ == "__main__":
@@ -190,14 +217,14 @@ if __name__ == "__main__":
     cancer_mortality_data = helper.cancer_mortality_data
 
     # cancer_vs_non_cancer_deaths_over_time()
-    cancer_death_age_gender_correlation()
+    # linear_regression_to_predict_number_of_deaths()
+    most_fatal_cancers_over_time()
 
     #######################
     dfs_causes = dict()
     for c in helper.cancer_classes:
         dfs_causes[c] = cancer_mortality_data.where(cancer_mortality_data['Cause'] == c)
     # cancer_class_dfs = {k: v for (k, v) in cancer_mortality_data.select('Cause').distinct().collect()}
-    print(dfs_causes)
     #
     # for i in range (0, 4):
     #     df = dfs_causes[list(dfs_causes.keys())[i]] # temporary, need to find top 5 causes

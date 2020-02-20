@@ -46,4 +46,6 @@ C029,breast,Mal. neoplasm of female breast
 C030,cervix,Mal. neoplasm of cervix uteri
 C031,bladder,Malign neoplasm of bladder
 C032,leukaemia,Leukaemia
+B00,all,All causes
+C001,all,All causes
 

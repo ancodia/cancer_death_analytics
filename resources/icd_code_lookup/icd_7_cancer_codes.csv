@@ -16,3 +16,5 @@ A057,other_cancers,Malignant neoplasm of all other and unspecified sites
 A058,leukaemia,Leukaemia and aleukaemia
 A059,lymphatic_haemopoietic,Lymphosarcoma and other neoplasms of lymphatic and haematopoietic system
 B018,other_cancers,Malignant neoplasms, including neoplasms of lymphatic and haematopoietic tissues
+A000,all,All causes
+B000,all,All causes

@@ -14,11 +14,10 @@ class SparkHelper:
         # self.spark.sparkContext.setLogLevel('DEBUG')
         self.cancer_classes = self.read_cancer_classes(path='../resources/data/unique_cancer_class.txt')
         self.mortality_data = self.read_data(path='../resources/data/codes_replaced/Mort*')
-        # filter for data between 1986-2015,
+        # filter for data between 1950-2015,
         # exclude UK - England, Wales, Scotland and NI are also reported separately
         self.mortality_data = self.mortality_data \
-            .filter((self.mortality_data['Year'] >= 1986)
-                    & (self.mortality_data['Year'] <= 2015)
+            .filter((self.mortality_data['Year'] <= 2015)
                     & (self.mortality_data['Country'] != 'United Kingdom'))
 
         self.cancer_mortality_data = self.mortality_data.filter(self.mortality_data['Cause'].isin(self.cancer_classes))

@@ -15,3 +15,5 @@ A057,prostate,Malignant neoplasm of prostate
 A058,other_cancers, Malignant neoplasm of other and unspecified sites
 A059,leukaemia, Leukaemia
 A060,lymphatic_haemopoietic,Other neoplasms of lymphatic and haemotopoietic tissue
+A000,all,All causes
+B000,all,All causes
