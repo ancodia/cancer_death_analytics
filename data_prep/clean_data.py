@@ -25,6 +25,10 @@ country_codes_dict = None
 
 
 def get_country_codes_dictionary():
+    """
+    Retrieve dictionary containing key value pairs: [country_code]:[country_string]
+    To be use for updating codes in source mortality and population data
+    """
     country_codes_df = pd.read_csv(country_codes_path, header=0, sep=',', index_col=False)
     global country_codes_dict
     country_codes_dict = dict(zip(list(country_codes_df['country']), list(country_codes_df['name'])))
@@ -48,6 +52,7 @@ def clean_icd_data(source_file_path, lookup_file_path, regex_replace=None):
 
     output_csv = '../resources/data/codes_replaced/' + \
                  os.path.basename(source_file_path) + '_updated.csv'
+    # create new csv with cleaned data, replacing any null values
     main_df.fillna(0).to_csv(output_csv, encoding='utf-8', index=False, float_format='%.f')
     print(f'Updated csv output to: {output_csv}')
 
@@ -61,6 +66,7 @@ def clean_populations_data():
 
     output_csv = '../resources/data/codes_replaced/' + \
                  os.path.basename(populations_path) + '_updated.csv'
+    # create new csv with cleaned data, replacing any null values
     df.fillna(0).to_csv(output_csv, encoding='utf-8', index=False, float_format='%.f')
     print(f'Updated csv output to: {output_csv}')
 
@@ -71,7 +77,9 @@ def create_unique_cancer_diagnosis_lookup_file():
     for lookup purposes during performance of analytics
     """
     lookup_files = [icd7_lookup_path, icd8_lookup_path, icd9_lookup_path, icd10_lookup_path]
+    # create dataframe containing all lookup data
     df = pd.concat((pd.read_csv(f, usecols=range(3), lineterminator='\n') for f in lookup_files), ignore_index=True)
+    # extract unique classes from dataframe
     unique_classes = list(df['class'].unique())
     # 'all' relates to overall death numbers so removing it
     unique_classes.remove('all')
