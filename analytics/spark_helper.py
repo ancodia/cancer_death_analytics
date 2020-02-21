@@ -1,8 +1,6 @@
-from functools import reduce
-from operator import add
-from pyspark.sql.functions import udf, Column
+from pyspark.sql.functions import udf
 import pyspark
-from pyspark.sql.types import FloatType, IntegerType
+from pyspark.sql.types import FloatType
 
 deaths_column_names = ['Deaths' + str(x) for x in range(1, 27)]
 
