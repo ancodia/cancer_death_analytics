@@ -3,6 +3,7 @@ import pandas as pd
 
 lookups_path = '../resources/icd_code_lookup/'
 data_path = '../resources/data/mortality_rate/'
+codes_replaced_path = '../resources/data/codes_replaced/'
 mortality_data_path = data_path + 'mortality_figures/'
 
 icd7_mortality_data_path = mortality_data_path + 'MortIcd7'
@@ -50,8 +51,7 @@ def clean_icd_data(source_file_path, lookup_file_path, regex_replace=None):
     if regex_replace is not None:
         main_df['Cause'].replace(regex_replace, 'other_cancers', regex=True, inplace=True)
 
-    output_csv = '../resources/data/codes_replaced/' + \
-                 os.path.basename(source_file_path) + '_updated.csv'
+    output_csv = codes_replaced_path + os.path.basename(source_file_path) + '_updated.csv'
     # create new csv with cleaned data, replacing any null values
     main_df.fillna(0).to_csv(output_csv, encoding='utf-8', index=False, float_format='%.f')
     print(f'Updated csv output to: {output_csv}')
@@ -64,8 +64,7 @@ def clean_populations_data():
     df = pd.read_csv(populations_path, header=0, sep=',', index_col=False)
     df['Country'] = df['Country'].map(country_codes_dict)
 
-    output_csv = '../resources/data/codes_replaced/' + \
-                 os.path.basename(populations_path) + '_updated.csv'
+    output_csv = codes_replaced_path + os.path.basename(populations_path) + '_updated.csv'
     # create new csv with cleaned data, replacing any null values
     df.fillna(0).to_csv(output_csv, encoding='utf-8', index=False, float_format='%.f')
     print(f'Updated csv output to: {output_csv}')
@@ -93,6 +92,8 @@ def create_unique_cancer_diagnosis_lookup_file():
 
 
 if __name__ == "__main__":
+    if not os.path.exists(codes_replaced_path):
+        os.mkdir(codes_replaced_path)
     get_country_codes_dictionary()
 
     clean_icd_data(icd7_mortality_data_path, icd7_lookup_path)
