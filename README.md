@@ -2,8 +2,8 @@
 
 ## Introduction
 Cancer is a disease which  will affect the majority of people in some way during  their lifetime. The goal of this project is to use analytic techniques on data from the WHO Mortality Database (WHOMD)<sup>1</sup> to  aid  in  performing the following tasks relating to cancer mortality:
-1)  Determine  the  proportion  of  total  deaths  that  cancerconstitutes over time
-2)  Predict  the  number  of  deaths  caused  by  cancer  usingregression
+1)  Determine  the  proportion  of  total  deaths  that  cancer constitutes over time
+2)  Predict  the  number  of  deaths  caused  by  cancer  using regression
 3)  Discover the forms of cancer responsible for the greatest number of deaths
 
 The   analytics   performed   on   the   dataset   in   question   is achieved  with  Spark,  PySpark  in  particular.  For  the  purpose of this project, all analytic processes are run in PySpark local development mode. This approach was decided upon because the  available  local  machine  (Ubuntu  18.04  running  on  RazerBlade  Stealth,  16GB  RAM,  Intel  Core  i7)  offers  sufficient processing power for the volume of data being considered atpresent. Due to the nature of Spark, all Python files produced here could easily be moved to a Spark cluster for distributed analytics  with  the  dataset  stored  on  a  Hadoop  cluster,  for example.
