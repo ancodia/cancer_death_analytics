@@ -1,7 +1,7 @@
 # Cancer Death Analytics
 
 ## Introduction
-Cancer is a disease which  will affect the majority of people in some way during  their lifetime. The goal of this project is to use analytic techniques on data from the WHO Mortality Database (WHOMD)<sup>1</sup> to  aid  in  performing the following tasks relating to cancer mortality:
+Cancer is a disease that will affect the majority of people in some way during  their lifetime. The goal of this project is to use analytic techniques on data from the WHO Mortality Database (WHOMD)<sup>1</sup> to  aid  in  performing the following tasks relating to cancer mortality:
 1)  Determine  the  proportion  of  total  deaths  that  cancer constitutes over time
 2)  Predict  the  number  of  deaths  caused  by  cancer  using regression
 3)  Discover the forms of cancer responsible for the greatest number of deaths
